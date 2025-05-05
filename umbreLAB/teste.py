@@ -1,7 +1,7 @@
 import requests
 import json
 
-# --- Configurações ---
+### Configurações #########################################################################
 # Substitua pelo seu token real gerado no Wialon
 WIALON_TOKEN = "517e0e42b9a966f628a9b8cffff3ffc3483B3EF18BC9DEBD2579FA3B321977AF6006F166"
 # Verifique se esta é a URL correta para sua instância Wialon (Hosting ou Local)
@@ -9,6 +9,9 @@ WIALON_BASE_URL = "https://hst-api.wialon.com" # Exemplo para Wialon Hosting
 
 # URL completa para a API
 API_URL = f"{WIALON_BASE_URL}/wialon/ajax.html"
+
+########################################################################################
+# --- Funções para Interagir com a API Wialon ------------------------------------------
 
 def wialon_login(token):
     """
@@ -184,7 +187,7 @@ if __name__ == "__main__":
                         ts_unix = last_message.get('t', None)
                         if ts_unix:
                             from datetime import datetime
-                            timestamp = datetime.utcfromtimestamp(ts_unix).strftime('%Y-%m-%d %H:%M:%S UTC')
+                            timestamp = datetime.fromtimestamp(ts_unix).strftime('%Y-%m-%d %H:%M:%S UTC')
 
                     print(f"ID: {unit_id}, Nome: {unit_name}, Lat: {latitude}, Lon: {longitude}, Última Msg: {timestamp}")
 
