@@ -28,11 +28,6 @@
 import requests
 import json
 import ast
-import pandas as pd
-import os
-import time
-
-
 
 ### Configurações #########################################################################
 #request template
@@ -57,7 +52,6 @@ WIALON_BASE_URL = "https://hst-api.wialon.com" # Exemplo para Wialon Hosting
 API_URL = f"{WIALON_BASE_URL}/wialon/ajax.html"
 
 deposito = rf"C:\TERRA DADOS\laboratorium\UMBRELLA360\deposito"
-ALPHA = rf"C:\TERRA DADOS\laboratorium\UMBRELLA360\deposito\ALPHA"
 
 
 
@@ -156,333 +150,6 @@ def wialon_logout(session_id):
     except json.JSONDecodeError:
         print(f"Erro ao decodificar resposta JSON do logout: {response.text}")
 
-################################################################################################
-# --- Funções DE SUPORTE ------------------------------------------
-
-
-# --- Função para salvar a variavel em um arquivo de texto em ALPHA ---
-# A função salva a variável em um arquivo de texto no diretório ALPHA.
-# O nome do arquivo é gerado a partir do timestamp atual,somado a uma variavel "nome" garantindo que seja único.
-# O arquivo é salvo no formato JSON, facilitando a leitura e a manipulação posterior.
-# A função é útil para registrar dados temporários ou de depuração durante a execução do script.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário salvar dados para análise posterior.
-def alpha_save(nome, variavel, indent=None):
-    """
-    Salva a variável em um arquivo de texto no diretório ALPHA.
-
-    Args:
-        nome (str): O nome do arquivo (sem extensão).
-        variavel (any): A variável a ser salva.
-        indent (int, optional): O nível de indentação para o JSON. Use None para desabilitar.
-
-    Returns:
-        str: O caminho do arquivo salvo.
-    """
-    file_path = os.path.join(ALPHA, f"{nome}.txt")
-    with open(file_path, 'w') as file:
-        file.write(json.dumps(variavel, indent=indent))  # Salva o resultado formatado em JSON
-    print(f"Resultado salvo em: {file_path}")
-    return file_path
-
-
-
-# --- Função para criar um diretório se não existir ---
-# A função create_directory verifica se o diretório especificado existe e, se não existir, cria-o.
-# A função é útil para garantir que o diretório de saída esteja disponível antes de tentar salvar arquivos nele.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário garantir a existência do diretório.
-def create_directory(directory):
-    """
-    Cria um diretório se ele não existir.
-
-    Args:
-        directory (str): O caminho do diretório a ser criado.
-    """
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-        print(f"Diretório criado: {directory}")
-    else:
-        print(f"O diretório já existe: {directory}")
-
-# --- Função para verificar se um arquivo existe ---
-# A função file_exists verifica se o arquivo especificado existe.
-# A função retorna True se o arquivo existir e False caso contrário.
-# A função é útil para verificar a existência de arquivos antes de tentar abri-los ou manipulá-los.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário verificar a existência de um arquivo.
-def file_exists(file_path):
-    """
-    Verifica se um arquivo existe.
-
-    Args:
-        file_path (str): O caminho do arquivo a ser verificado.
-
-    Returns:
-        bool: True se o arquivo existir, False caso contrário.
-    """
-    return os.path.isfile(file_path)
-
-
-# --- Função para verificar se um diretório existe ---
-# A função directory_exists verifica se o diretório especificado existe.
-# A função retorna True se o diretório existir e False caso contrário.
-# A função é útil para verificar a existência de diretórios antes de tentar salvá-los ou manipulá-los.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário verificar a existência de um diretório.
-def directory_exists(directory):
-    """
-    Verifica se um diretório existe.
-
-    Args:
-        directory (str): O caminho do diretório a ser verificado.
-
-    Returns:
-        bool: True se o diretório existir, False caso contrário.
-    """
-    return os.path.isdir(directory)
-
-
-# --- Função para verificar se um arquivo é um JSON válido ---
-# A função is_valid_json tenta carregar o conteúdo do arquivo como JSON.
-# Se o carregamento for bem-sucedido, retorna True; caso contrário, retorna False.
-# A função é útil para validar arquivos JSON antes de tentar manipulá-los.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário verificar a validade de um arquivo JSON.
-def is_valid_json(file_path):
-    """
-    Verifica se um arquivo é um JSON válido.
-
-    Args:
-        file_path (str): O caminho do arquivo a ser verificado.
-
-    Returns:
-        bool: True se o arquivo for um JSON válido, False caso contrário.
-    """
-    try:
-        with open(file_path, 'r') as file:
-            json.load(file)
-        return True
-    except (ValueError, FileNotFoundError):
-        return False
-    
-
-# --- Função para converter um dicionário em um DataFrame do pandas ---
-# A função dict_to_dataframe converte um dicionário em um DataFrame do pandas.
-# A função é útil para manipular e analisar dados de forma tabular.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário converter dados de um dicionário para um DataFrame.
-def dict_to_dataframe(data):
-    """
-    Converte um dicionário em um DataFrame do pandas.
-
-    Args:
-        data (dict): O dicionário a ser convertido.
-
-    Returns:
-        pd.DataFrame: O DataFrame resultante.
-    """
-    return pd.DataFrame(data)
-
-
-# --- Função para salvar um DataFrame em um arquivo Excel ---
-# A função save_dataframe_to_excel salva um DataFrame em um arquivo Excel.
-# A função utiliza o pandas para criar o arquivo Excel e pode especificar o nome do arquivo e o caminho de saída.
-# A função é útil para exportar dados analisados ou manipulados para um formato amplamente utilizado.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário salvar dados em um arquivo Excel.
-def save_dataframe_to_excel(dataframe, file_path):
-    """
-    Salva um DataFrame em um arquivo Excel.
-
-    Args:
-        dataframe (pd.DataFrame): O DataFrame a ser salvo.
-        file_path (str): O caminho do arquivo de saída.
-
-    Returns:
-        str: O caminho do arquivo salvo.
-    """
-    dataframe.to_excel(file_path, index=False)
-    print(f"DataFrame salvo em: {file_path}")
-    return file_path
-
-
-
-# --- Função para imprimir o conteúdo de um arquivo JSON ---
-# A função print_json_file lê o conteúdo de um arquivo JSON e o imprime de forma formatada.
-# A função é útil para visualizar rapidamente o conteúdo de arquivos JSON.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário visualizar o conteúdo de um arquivo JSON.
-def print_json_file(file_path):
-    """
-    Lê e imprime o conteúdo de um arquivo JSON.
-
-    Args:
-        file_path (str): O caminho do arquivo JSON a ser lido.
-    """
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            print(json.dumps(data, indent=4))  # Imprime o JSON formatado
-    except (ValueError, FileNotFoundError) as e:
-        print(f"Erro ao ler o arquivo JSON: {e}")
-
-
-# --- Função para imprimir o conteúdo de um arquivo de texto ---
-# A função print_text_file lê o conteúdo de um arquivo de texto e o imprime.
-# A função é útil para visualizar rapidamente o conteúdo de arquivos de texto.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário visualizar o conteúdo de um arquivo de texto.
-def print_text_file(file_path):
-    """
-    Lê e imprime o conteúdo de um arquivo de texto.
-
-    Args:
-        file_path (str): O caminho do arquivo de texto a ser lido.
-    """
-    try:
-        with open(file_path, 'r') as file:
-            content = file.read()
-            print(content)  # Imprime o conteúdo do arquivo
-    except FileNotFoundError as e:
-        print(f"Erro ao ler o arquivo de texto: {e}")
-
-
-# --- Função para imprimir o conteúdo de um arquivo Excel ---
-# A função print_excel_file lê o conteúdo de um arquivo Excel e o imprime.
-# A função utiliza o pandas para ler o arquivo Excel e imprimir seu conteúdo.
-# A função é útil para visualizar rapidamente o conteúdo de arquivos Excel.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário visualizar o conteúdo de um arquivo Excel.
-def print_excel_file(file_path):
-    """
-    Lê e imprime o conteúdo de um arquivo Excel.
-
-    Args:
-        file_path (str): O caminho do arquivo Excel a ser lido.
-    """
-    try:
-        df = pd.read_excel(file_path)
-        print(df)  # Imprime o DataFrame
-    except FileNotFoundError as e:
-        print(f"Erro ao ler o arquivo Excel: {e}")
-    except ValueError as e:
-        print(f"Erro ao processar o arquivo Excel: {e}")
-
-
-# --- Função para imprimir o conteúdo de um arquivo CSV ---
-# A função print_csv_file lê o conteúdo de um arquivo CSV e o imprime.
-# A função utiliza o pandas para ler o arquivo CSV e imprimir seu conteúdo.
-# A função é útil para visualizar rapidamente o conteúdo de arquivos CSV.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário visualizar o conteúdo de um arquivo CSV.
-def print_csv_file(file_path):
-    """
-    Lê e imprime o conteúdo de um arquivo CSV.
-
-    Args:
-        file_path (str): O caminho do arquivo CSV a ser lido.
-    """
-    try:
-        df = pd.read_csv(file_path)
-        print(df)  # Imprime o DataFrame
-    except FileNotFoundError as e:
-        print(f"Erro ao ler o arquivo CSV: {e}")
-    except ValueError as e:
-        print(f"Erro ao processar o arquivo CSV: {e}")
-
-# --- Função para imprimir o conteúdo de um arquivo de texto com codificação específica ---
-# A função print_text_file_with_encoding lê o conteúdo de um arquivo de texto com uma codificação específica e o imprime.
-# A função é útil para visualizar rapidamente o conteúdo de arquivos de texto com codificações diferentes.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário visualizar o conteúdo de um arquivo de texto com uma codificação específica.
-def print_text_file_with_encoding(file_path, encoding='utf-8'):
-    """
-    Lê e imprime o conteúdo de um arquivo de texto com uma codificação específica.
-
-    Args:
-        file_path (str): O caminho do arquivo de texto a ser lido.
-        encoding (str): A codificação do arquivo (padrão é 'utf-8').
-    """
-    try:
-        with open(file_path, 'r', encoding=encoding) as file:
-            content = file.read()
-            print(content)  # Imprime o conteúdo do arquivo
-    except FileNotFoundError as e:
-        print(f"Erro ao ler o arquivo de texto: {e}")
-    except UnicodeDecodeError as e:
-        print(f"Erro de decodificação ao ler o arquivo: {e}")
-
-
-# --- Função para pausar o código e perguntar se deseja prosseguir ---
-# A função pause pergunta ao usuário se deseja continuar a execução do código.
-# Se o usuário digitar 's', a execução continua; caso contrário, o código é encerrado.
-# A função é útil para permitir que o usuário revise os resultados antes de prosseguir.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário pausar a execução e solicitar confirmação do usuário.
-def pause():
-    """
-    Pausa a execução do código e pergunta se deseja continuar.
-
-    Returns:
-        bool: True se o usuário deseja continuar, False caso contrário.
-    """
-    while True:
-        user_input = input("Deseja continuar? (s/n): ").strip().lower()
-        if user_input == 's':
-            return True
-        elif user_input == 'n':
-            print("Execução encerrada pelo usuário.")
-            return False
-        else:
-            print("Entrada inválida. Por favor, digite 's' para continuar ou 'n' para encerrar.")
-
-
-
-# --- Função para converter um dicionário em uma string formatada ---
-# A função dict_to_string converte um dicionário em uma string formatada.
-# A função é útil para exibir dados de forma legível.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário exibir dados de um dicionário.
-def dict_to_string(data):
-    """
-    Converte um dicionário em uma string formatada.
-
-    Args:
-        data (dict): O dicionário a ser convertido.
-
-    Returns:
-        str: A string formatada representando o dicionário.
-    """
-    return json.dumps(data, indent=4)  # Formata o dicionário como JSON com indentação
-
-
-# --- Função para converter uma string em um dicionário ---
-# A função string_to_dict converte uma string formatada em um dicionário.
-# A função é útil para manipular dados que foram convertidos em string.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário converter uma string em um dicionário.
-def string_to_dict(data_string):
-    """
-    Converte uma string formatada em um dicionário.
-
-    Args:
-        data_string (str): A string a ser convertida.
-
-    Returns:
-        dict: O dicionário resultante.
-    """
-    try:
-        return json.loads(data_string)  # Converte a string JSON de volta para um dicionário
-    except json.JSONDecodeError as e:
-        print(f"Erro ao decodificar a string JSON: {e}")
-        return None
-    
-
-# --- Função para converter uma string em um dicionário usando ast.literal_eval ---
-# A função string_to_dict_ast converte uma string formatada em um dicionário usando ast.literal_eval.
-# A função é útil para manipular dados que foram convertidos em string.
-# A função pode ser chamada em qualquer ponto do código onde seja necessário converter uma string em um dicionário.
-def string_to_dict_ast(data_string):
-    """
-    Converte uma string formatada em um dicionário usando ast.literal_eval.
-
-    Args:
-        data_string (str): A string a ser convertida.
-
-    Returns:
-        dict: O dicionário resultante.
-    """
-    try:
-        return ast.literal_eval(data_string)  # Converte a string para um dicionário
-    except (ValueError, SyntaxError) as e:
-        print(f"Erro ao decodificar a string: {e}")
-        return None
 
 
 ###########################################################################################
@@ -659,7 +326,7 @@ def buscadora_ID(session_id, unit_id):
     # 0: Não inclui informações adicionais (apenas ID e nome)
 
     url = f"https://hst-api.wialon.com/wialon/ajax.html?svc=core/search_item&params={{\"id\":{unit_id},\"flags\":{flag}}}&sid={session_id}"
-    #print(f"URL gerada para teste: {url}")
+    print(f"URL gerada para teste: {url}")
 
     try:
         response = requests.get(url)
@@ -670,11 +337,13 @@ def buscadora_ID(session_id, unit_id):
             print(f"Erro de API ao buscar unidade: {result}")
             return None
 
-        #print(f"Resposta da API: {result}")
+        print(f"Resposta da API: {result}")
         # salva o result em um arquivo de texto em deposito com o nome da unidade
-        #para_txt(result)
-        # faz o parsing do result
-        #parsing(result)
+        unit_name = result.get('item', {}).get('nm', 'unidade_desconhecida')
+        file_path = f"{deposito}/{unit_name}.txt"
+        with open(file_path, 'w') as file:
+            file.write(json.dumps(result, indent=4))  # Salva o resultado formatado em JSON
+        print(f"Resultado salvo em: {file_path}")
         return result
 
     except requests.exceptions.RequestException as e:
@@ -684,40 +353,7 @@ def buscadora_ID(session_id, unit_id):
         print(f"Erro ao decodificar resposta JSON: {response.text}")
         return None
 
-def para_txt(result):
-    unit_name = result.get('item', {}).get('nm', 'unidade_desconhecida')
-    file_path = f"{deposito}/{unit_name}.txt"
-    with open(file_path, 'w') as file:
-        file.write(json.dumps(result, indent=4))  # Salva o resultado formatado em JSON
-    print(f"Resultado salvo em: {file_path}")
 
-
-
-# --- Função para exportar dados de buscadora_ID para Excel ---
-# A função para_excel exporta os dados obtidos pela função buscadora_ID para um arquivo Excel.
-# A função utiliza a biblioteca pandas para criar um DataFrame e salvar os dados em um arquivo Excel.
-# A função também trata erros de conexão e resposta da API, retornando None em caso de falha.
-def para_excel(result):
-    """
-    Exporta os dados obtidos pela função buscadora_ID para um arquivo Excel.
-
-    Args:
-        result (dict): O resultado da busca da unidade.
-
-    Returns:
-        str: O caminho do arquivo Excel gerado.
-    """
-    unit_name = result.get('item', {}).get('nm', 'unidade_desconhecida')
-    file_path = f"{deposito}/{unit_name}.xlsx"
-    
-    # Converte o dicionário em um DataFrame do pandas
-    df = pd.DataFrame([result])
-
-    # Salva o DataFrame em um arquivo Excel
-    df.to_excel(file_path, index=False)
-    
-    print(f"Resultado exportado para: {file_path}")
-    return file_path
 
 ############################################################################################
 
@@ -725,9 +361,10 @@ def para_excel(result):
 # --- Função para exibir os dados em colunas ---
 def parsing(result):
     # String com o dado recebido (formato de dicionário)
+    data_str = result
 
     # Converte a string para um dicionário Python
-    data = ast.literal_eval(result)
+    data = ast.literal_eval(data_str)
 
     def flatten_dict(d, parent_key='', sep='_'):
         """
@@ -906,23 +543,33 @@ def teste_busca_unidade_por_id(session_id, unit_id):
 
 
 
-def lista_unidades(sid):
-    units_list = search_units(sid)
-    print("\n--- Lista de Unidades ---")
-    units_dict = {}
-    for unit in units_list:
-        # Extrai algumas informações básicas
-        unit_id = unit.get('id', 'N/A')
-        unit_name = unit.get('nm', 'Sem Nome')
-        units_dict[unit_id] = unit_name
-    return units_dict
+def lista_unidades():
+        if sid:
+            units_list = search_units(sid)
 
+            if units_list:
+                print("\n--- Lista de Unidades ---")
+                for unit in units_list:
+                    # Extrai algumas informações básicas
+                    unit_id = unit.get('id', 'N/A')
+                    unit_name = unit.get('nm', 'Sem Nome')
+                    last_message = unit.get('pos', None) # Última posição/status (requer flag 4096)
+                    latitude = "N/A"
+                    longitude = "N/A"
+                    timestamp = "N/A"
 
-def listar_IDs(sid):
-    units_list = search_units(sid)
-    print("\n--- Lista de IDs ---")
-    ids_list = [unit.get('id', 'N/A') for unit in units_list]
-    return ids_list
+                    if last_message:
+                        latitude = last_message.get('y', 'N/A')
+                        longitude = last_message.get('x', 'N/A')
+                        # O timestamp é em segundos Unix
+                        ts_unix = last_message.get('t', None)
+                        if ts_unix:
+                            from datetime import datetime
+                            timestamp = datetime.fromtimestamp(ts_unix).strftime('%Y-%m-%d %H:%M:%S UTC')
+                return units_list
+                    # Exibe as informações da unidade
+                    # Você pode formatar a saída como desejar, por exemplo:s
+            print(f"ID: {unit_id}, Nome: {unit_name}, Lat: {latitude}, Lon: {longitude}, Última Msg: {timestamp}")
 
 
 
@@ -997,8 +644,8 @@ def PRINCIPAL():
 def base():
         sid = wialon_login(WIALON_TOKEN)
         #listar_IDs(sid)
-        busca_unidade_por_id(sid, 401790184)
-        teste_parsing()
+        #busca_unidade_por_id(sid, 401790184)
+
 
 
         # Você pode acessar outras propriedades aqui, dependendo das flags usadas
@@ -1012,67 +659,11 @@ def base():
 ### --- TESTE ---
 def TESTE():
     sid = wialon_login(WIALON_TOKEN)
-    print(lista_unidades(sid))
-    
-
-
-    #buscadora_ID(sid, 401790184)
-
+    buscadora_ID(sid, 401790184)
+    #result = teste_busca_unidade_por_id(sid, 401790184)
+    #parsing(result)
     
     wialon_logout(sid)
-
-########################################################################################
-# --- teste de busca por ID por lista de IDs ---
-def expresso_alpha():
-    sid = wialon_login(WIALON_TOKEN)
-    ids_list = listar_IDs(sid)
-    print(ids_list) 
-    result = buscadora_ID(sid, 401790184)
-    print(result)
-
-
-    #exporta para excel
-    #para_excel(result)
-    
-    #fetch_unit_data(sid, ids_list)
-
-    wialon_logout(sid)
-
-def fetch_unit_data(sid, ids_list):
-    for unit_id in ids_list:
-        print(f"Buscando unidade com ID: {unit_id}")
-        dados = buscadora_ID(sid, unit_id)
-        print(dados)
-
-
-
-def teste_expresso_alpha():
-    sid = wialon_login(WIALON_TOKEN)
-    ids_list = listar_IDs(sid)
-    print(ids_list) 
-    result = buscadora_ID(sid, 401790184)
-    print(result)
-
-
-    #exporta para excel
-    #para_excel(result)
-    
-    #fetch_unit_data(sid, ids_list)
-
-    wialon_logout(sid)
-
-
-#faz login no wialon
-
-# busca todas as unidades e salva as IDs em uma lista
-# itera sobre a lista de IDs e busca cada unidade por ID
-# salva em um arquivo excel 
- 
-
-
-
-
-# faz logout no wialon 
 
 
 
@@ -1080,5 +671,4 @@ def teste_expresso_alpha():
 ### --- Execução Principal ---
 #base()
 #teste_parsing()
-#TESTE()
-#teste_expresso_alpha()   
+TESTE()
